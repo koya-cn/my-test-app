@@ -25,8 +25,15 @@ app.get('/api/fetch', async (c) => {
 
     // APIから記事を取得するためのヘルパー関数
     async function fetchArticles(page: number) {
-        const url = `https://zenn.dev/api/articles?page=${page}&order=latest`;
-        const response = await fetch(url);
+        // topicname が指定されている場合はクエリに追加
+        const url = new URL(`https://zenn.dev/api/articles`);
+        url.searchParams.append('page', page.toString());
+        url.searchParams.append('order', 'latest');
+        if (topic) {
+            url.searchParams.append('topicname', topic);
+        }
+
+        const response = await fetch(url.toString());
         if (!response.ok) {
             throw new Error(`Error fetching page ${page}`);
         }
@@ -34,13 +41,11 @@ app.get('/api/fetch', async (c) => {
     }
 
     // 記事をフィルタリングするヘルパー関数
-    function filterArticles(articles: any[], startDate: Date, endDate: Date, includePublication: boolean, topic: string) {
+    function filterArticles(articles: any[], startDate: Date, endDate: Date, includePublication: boolean) {
         return articles.filter(article => {
             const articleDate = new Date(article.published_at);
-            const hasTopic = topic ? article.topicname.includes(topic) : true;
             return (includePublication ? article.publication !== null : true) &&
-                startDate <= articleDate && articleDate <= endDate &&
-                hasTopic;
+                startDate <= articleDate && articleDate <= endDate;
         });
     }
 
@@ -58,8 +63,7 @@ app.get('/api/fetch', async (c) => {
             articlesData.articles,
             startDate,
             endDate,
-            includePublication,
-            topic
+            includePublication
         );
         articlesList = articlesList.concat(filteredArticles);
         if (articlesData.next_page) {
