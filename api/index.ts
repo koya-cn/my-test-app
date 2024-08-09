@@ -75,7 +75,15 @@ app.get('/api/fetch', async (c) => {
 
     articlesList = sortArticlesByLikes(articlesList);
 
-    return c.json(articlesList);
+    return c.json({
+        total_articles: articlesList.length,
+        articles: articlesList.map((article, index) => ({
+            rank: index + 1,
+            title: article.title,
+            liked_count: article.liked_count,
+            url: `https://zenn.dev${article.path}`
+        }))
+    });
 });
 
 export default handle(app)
