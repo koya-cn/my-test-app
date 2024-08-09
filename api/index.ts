@@ -12,9 +12,10 @@ app.get('/', (c) => {
 })
 
 app.get('/fetch', async (c) => {
-    const { start_date, end_date, include_publication, max_pages } = c.req.query();
+    const { start_date, end_date, include_publication, max_pages, topicname } = c.req.query();
     const includePublication = include_publication === 'on';
     const maxPages = parseInt(max_pages, 10);
+    const topicName = topicname || '';
 
     function parseDate(dateStr: string): Date {
         return new Date(dateStr);
@@ -33,14 +34,16 @@ app.get('/fetch', async (c) => {
         articles: any[],
         startDate: Date,
         endDate: Date,
-        includePublication: boolean
+        includePublication: boolean,
+        topicName: string
     ) {
         return articles.filter(article => {
             const articleDate = new Date(article.published_at);
             return (
                 (includePublication ? article.publication !== null : true) &&
                 startDate <= articleDate &&
-                articleDate <= endDate
+                articleDate <= endDate &&
+                (topicName ? article.tags.includes(topicName) : true)
             );
         });
     }
@@ -59,7 +62,8 @@ app.get('/fetch', async (c) => {
             articlesData.articles,
             parseDate(start_date),
             parseDate(end_date),
-            includePublication
+            includePublication,
+            topicName
         );
         articlesList = articlesList.concat(filteredArticles);
         totalPages += 1;
