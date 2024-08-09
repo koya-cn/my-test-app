@@ -11,7 +11,7 @@ app.get('/', (c) => {
   return c.json({ message: 'Hello Hono!' })
 })
 
-app.get('/api/fetch', async (c) => {
+app.get('/fetch', async (c) => {
     const { start_date, end_date, include_publication, max_pages, topicname } = c.req.query();
 
     // デフォルト値設定
